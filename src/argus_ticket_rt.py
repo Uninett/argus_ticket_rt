@@ -62,7 +62,7 @@ class RequestTrackerPlugin(TicketPlugin):
             return client
 
     @classmethod
-    def create_ticket(cls, incident):
+    def create_ticket(cls, serialized_incident: dict):
         """
         Creates a Request Tracker ticket with the incident as template and returns the
         ticket url
@@ -72,8 +72,8 @@ class RequestTrackerPlugin(TicketPlugin):
         client = cls.create_client(endpoint, authentication)
         data = {
             "Queue": ticket_information["queue"],
-            "Subject": str(incident),
-            "Text": incident.description,
+            "Subject": serialized_incident["description"],
+            "Text": serialized_incident["description"],
         }
 
         try:
