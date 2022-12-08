@@ -73,7 +73,7 @@ class RequestTrackerPlugin(TicketPlugin):
         data = {
             "Queue": ticket_information["queue"],
             "Subject": serialized_incident["description"],
-            "Text": serialized_incident["description"],
+            "Content": str(serialized_incident),
         }
 
         try:
