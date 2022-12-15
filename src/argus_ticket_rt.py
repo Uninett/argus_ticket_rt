@@ -3,7 +3,7 @@
 import logging
 from urllib.parse import urljoin
 
-from rt_client.client import Client
+from rt.rest2 import Rt
 
 from argus.incident.ticket.base import TicketPlugin, TicketPluginException
 
@@ -25,15 +25,12 @@ class RequestTrackerPlugin(TicketPlugin):
             LOG.exception("Could not import settings for ticket plugin.")
             raise TicketPluginException(f"Request Tracker: {e}")
 
-        if (
-            "username" not in authentication.keys()
-            or "password" not in authentication.keys()
-        ):
+        if ("token" not in authentication.keys()):
             LOG.error(
-                "Request Tracker: No username or password can be found in the authentication information. Please update the setting 'TICKET_AUTHENTICATION_SECRET'."
+                "Request Tracker: No token can be found in the authentication information. Please update the setting 'TICKET_AUTHENTICATION_SECRET'."
             )
             raise TicketPluginException(
-                "Request Tracker: No username or password can be found in the authentication information. Please update the setting 'TICKET_AUTHENTICATION_SECRET'."
+                "Request Tracker: No token can be found in the authentication information. Please update the setting 'TICKET_AUTHENTICATION_SECRET'."
             )
 
         if "queue" not in ticket_information.keys():
@@ -50,10 +47,9 @@ class RequestTrackerPlugin(TicketPlugin):
     def create_client(endpoint, authentication):
         """Creates and returns a RT client"""
         try:
-            client = Client(
-                username=authentication["username"],
-                password=authentication["password"],
-                endpoint=endpoint,
+            client = Rt(
+                url=urljoin(endpoint, "REST/2.0"),
+                token=authentication["token"],
             )
         except Exception as e:
             LOG.exception("Request Tracker: Client could not be created.")
@@ -70,14 +66,14 @@ class RequestTrackerPlugin(TicketPlugin):
         endpoint, authentication, ticket_information = cls.import_settings()
 
         client = cls.create_client(endpoint, authentication)
-        data = {
-            "Queue": ticket_information["queue"],
-            "Subject": serialized_incident["description"],
-            "Content": str(serialized_incident),
-        }
 
         try:
-            ticket_id = client.ticket.create(attrs=data)["id"]
+            ticket_id = client.create_ticket(
+                queue=ticket_information["queue"],
+                subject=serialized_incident["description"],
+                content=serialized_incident["description"],
+            )
+
         except Exception as e:
             LOG.exception("Request Tracker: Ticket could not be created.")
             raise TicketPluginException(f"Request Tracker: {e}")
