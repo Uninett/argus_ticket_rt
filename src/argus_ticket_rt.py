@@ -25,7 +25,7 @@ class RequestTrackerPlugin(TicketPlugin):
             LOG.exception("Could not import settings for ticket plugin.")
             raise TicketPluginException(f"Request Tracker: {e}")
 
-        if ("token" not in authentication.keys()):
+        if "token" not in authentication.keys():
             LOG.error(
                 "Request Tracker: No token can be found in the authentication information. Please update the setting 'TICKET_AUTHENTICATION_SECRET'."
             )
@@ -42,6 +42,30 @@ class RequestTrackerPlugin(TicketPlugin):
             )
 
         return endpoint, authentication, ticket_information
+
+    @staticmethod
+    def convert_tags_to_dict(tag_dict: dict) -> dict:
+        incident_tags_list = [entry["tag"].split("=") for entry in tag_dict]
+        return {key: value for key, value in incident_tags_list}
+
+    @staticmethod
+    def get_custom_fields(ticket_information: dict, serialized_incident: dict) -> dict:
+        incident_tags = RequestTrackerPlugin.convert_tags_to_dict(
+            serialized_incident["tags"]
+        )
+        custom_fields = ticket_information.get("custom_fields", {})
+        custom_fields_mapping = ticket_information.get("custom_fields_mapping", {})
+
+        for key, field in custom_fields_mapping.items():
+            if type(field) is dict:
+                # Information can be found in tags
+                custom_fields[key] = incident_tags[field["tag"]]
+            else:
+                if serialized_incident[field] == "infinity":
+                    continue
+                custom_fields[key] = serialized_incident[field]
+
+        return custom_fields
 
     @staticmethod
     def create_client(endpoint, authentication):
@@ -67,11 +91,23 @@ class RequestTrackerPlugin(TicketPlugin):
 
         client = cls.create_client(endpoint, authentication)
 
+        body = cls.create_html_body(serialized_incident=serialized_incident)
+        custom_fields = cls.get_custom_fields(
+            ticket_information=ticket_information,
+            serialized_incident=serialized_incident,
+        )
+
         try:
             ticket_id = client.create_ticket(
                 queue=ticket_information["queue"],
                 subject=serialized_incident["description"],
-                content=serialized_incident["description"],
+                content_type="text/html",
+                content=body,
+                RefersTo=[
+                    serialized_incident["details_url"],
+                    serialized_incident["argus_url"],
+                ],
+                CustomFields=custom_fields,
             )
 
         except Exception as e:
