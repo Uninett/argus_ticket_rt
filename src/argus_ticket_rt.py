@@ -1,6 +1,7 @@
 "Allow argus-server to create tickets in Request Tracker"
 
 import logging
+import requests
 from urllib.parse import urljoin
 
 from rt.rest2 import Rt
@@ -25,12 +26,15 @@ class RequestTrackerPlugin(TicketPlugin):
             LOG.exception("Could not import settings for ticket plugin.")
             raise TicketPluginException(f"Request Tracker: {e}")
 
-        if ("token" not in authentication.keys()):
+        if "token" not in authentication.keys() and (
+            "username" not in authentication.keys()
+            or "password" not in authentication.keys()
+        ):
             LOG.error(
-                "Request Tracker: No token can be found in the authentication information. Please update the setting 'TICKET_AUTHENTICATION_SECRET'."
+                "Request Tracker: No authentication details (token or username/password) can be found in the authentication information. Please update the setting 'TICKET_AUTHENTICATION_SECRET'."
             )
             raise TicketPluginException(
-                "Request Tracker: No token can be found in the authentication information. Please update the setting 'TICKET_AUTHENTICATION_SECRET'."
+                "Request Tracker: No authentication details (token or username/password) can be found in the authentication information. Please update the setting 'TICKET_AUTHENTICATION_SECRET'."
             )
 
         if "queue" not in ticket_information.keys():
@@ -46,10 +50,24 @@ class RequestTrackerPlugin(TicketPlugin):
     @staticmethod
     def create_client(endpoint, authentication):
         """Creates and returns a RT client"""
+        if "token" in authentication.keys:
+            try:
+                client = Rt(
+                    url=urljoin(endpoint, "REST/2.0"),
+                    token=authentication["token"],
+                )
+            except Exception as e:
+                LOG.exception("Request Tracker: Client could not be created.")
+                raise TicketPluginException(f"Request Tracker: {e}")
+            else:
+                return client
+
         try:
             client = Rt(
                 url=urljoin(endpoint, "REST/2.0"),
-                token=authentication["token"],
+                http_auth=requests.auth.HTTPBasicAuth(
+                    authentication["username"], authentication["password"]
+                ),
             )
         except Exception as e:
             LOG.exception("Request Tracker: Client could not be created.")
