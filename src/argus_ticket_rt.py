@@ -4,9 +4,16 @@ import logging
 import requests
 from urllib.parse import urljoin
 
+import rt.exceptions as rt_exceptions
 from rt.rest2 import Rt
 
-from argus.incident.ticket.base import TicketPlugin, TicketPluginException
+from argus.incident.ticket.base import (
+    TicketClientException,
+    TicketCreationException,
+    TicketPlugin,
+    TicketPluginException,
+    TicketSettingsException,
+)
 
 LOG = logging.getLogger(__name__)
 
@@ -22,27 +29,24 @@ class RequestTrackerPlugin(TicketPlugin):
     def import_settings(cls):
         try:
             endpoint, authentication, ticket_information = super().import_settings()
-        except ValueError as e:
-            LOG.exception("Could not import settings for ticket plugin.")
-            raise TicketPluginException(f"Request Tracker: {e}")
+        except TicketSettingsException as e:
+            LOG.exception(e)
+            raise TicketSettingsException(f"Request Tracker: {e}")
 
         if "token" not in authentication.keys() and (
-            "username" not in authentication.keys()
-            or "password" not in authentication.keys()
+            "username" not in authentication.keys() or "password" not in authentication.keys()
         ):
-            LOG.error(
-                "Request Tracker: No authentication details (token or username/password) can be found in the authentication information. Please update the setting 'TICKET_AUTHENTICATION_SECRET'."
+            LOG.exception(
+                "Request Tracker: No authentication details (token or username/password) can be found in the authentication information."
             )
-            raise TicketPluginException(
-                "Request Tracker: No authentication details (token or username/password) can be found in the authentication information. Please update the setting 'TICKET_AUTHENTICATION_SECRET'."
+            raise TicketSettingsException(
+                "Request Tracker: No authentication details (token or username/password) can be found in the authentication information. Please check and update the setting 'TICKET_AUTHENTICATION_SECRET'."
             )
 
         if "queue" not in ticket_information.keys():
-            LOG.error(
-                "Request Tracker: No queue can be found in the ticket information. Please update the setting 'TICKET_INFORMATION'."
-            )
-            raise TicketPluginException(
-                "Request Tracker: No queue can be found in the ticket information. Please update the setting 'TICKET_INFORMATION'."
+            LOG.exception("Request Tracker: No queue can be found in the ticket information.")
+            raise TicketSettingsException(
+                "Request Tracker: No queue can be found in the ticket information. Please check and update the setting 'TICKET_INFORMATION'."
             )
 
         return endpoint, authentication, ticket_information
@@ -50,30 +54,16 @@ class RequestTrackerPlugin(TicketPlugin):
     @staticmethod
     def create_client(endpoint, authentication):
         """Creates and returns a RT client"""
-        if "token" in authentication.keys:
-            try:
-                client = Rt(
-                    url=urljoin(endpoint, "REST/2.0"),
-                    token=authentication["token"],
-                )
-            except Exception as e:
-                LOG.exception("Request Tracker: Client could not be created.")
-                raise TicketPluginException(f"Request Tracker: {e}")
-            else:
-                return client
-
-        try:
-            client = Rt(
+        if "token" in authentication.keys():
+            return Rt(
                 url=urljoin(endpoint, "REST/2.0"),
-                http_auth=requests.auth.HTTPBasicAuth(
-                    authentication["username"], authentication["password"]
-                ),
+                token=authentication["token"],
             )
-        except Exception as e:
-            LOG.exception("Request Tracker: Client could not be created.")
-            raise TicketPluginException(f"Request Tracker: {e}")
-        else:
-            return client
+
+        return Rt(
+            url=urljoin(endpoint, "REST/2.0"),
+            http_auth=requests.auth.HTTPBasicAuth(authentication["username"], authentication["password"]),
+        )
 
     @classmethod
     def create_ticket(cls, serialized_incident: dict):
@@ -85,15 +75,41 @@ class RequestTrackerPlugin(TicketPlugin):
 
         client = cls.create_client(endpoint, authentication)
 
+        # Check if queue exists
+        queue = ticket_information["queue"]
+        try:
+            client.get_queue(queue_id=queue)
+        except (rt_exceptions.ConnectionError, ConnectionError):
+            LOG.exception("Request Tracker: Could not connect to Request Tracker.")
+            raise TicketClientException("Request Tracker: Could not connect to Request Tracker.")
+        except rt_exceptions.AuthorizationError:
+            LOG.exception("Request Tracker: The authentication details are incorrect.")
+            raise TicketSettingsException(
+                "Request Tracker: The authentication details are incorrect. Please check and update the setting 'TICKET_AUTHENTICATION_SECRET'."
+            )
+        except rt_exceptions.NotAllowedError:
+            LOG.exception("Request Tracker: Authenticated client does not have sufficient permissions.")
+            raise TicketCreationException("Request Tracker: Authenticated client does not have sufficient permissions.")
+        except rt_exceptions.NotFoundError:
+            LOG.exception("Request Tracker: No queue with the name %s can be found.", queue)
+            raise TicketSettingsException(
+                f"Request Tracker: No queue with the name {queue} can be found. Please check and update the setting 'TICKET_INFORMATION'."
+            )
+
         try:
             ticket_id = client.create_ticket(
                 queue=ticket_information["queue"],
                 subject=serialized_incident["description"],
                 content=serialized_incident["description"],
             )
-
+        except rt_exceptions.ConnectionError:
+            LOG.exception("Request Tracker: Could not connect to Request Tracker.")
+            raise TicketClientException("Request Tracker: Could not connect to Request Tracker.")
+        except rt_exceptions.NotAllowedError:
+            LOG.exception("Request Tracker: Authenticated client does not have sufficient permissions.")
+            raise TicketCreationException("Request Tracker: Authenticated client does not have sufficient permissions.")
         except Exception as e:
-            LOG.exception("Request Tracker: Ticket could not be created.")
+            LOG.exception("Request Tracker: Ticket could not be created. %s", str(e))
             raise TicketPluginException(f"Request Tracker: {e}")
         else:
             ticket_url = urljoin(endpoint, f"Ticket/Display.html?id={ticket_id}")
