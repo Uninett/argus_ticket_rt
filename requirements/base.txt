@@ -1,2 +1,2 @@
 argus-server>=1.10.0
-rt_client
+rt

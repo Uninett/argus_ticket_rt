@@ -21,3 +21,7 @@ This is a plugin to create tickets in Request Tracker from [Argus](https://githu
         "queue": queue_name
     }
     ```
+
+## Library
+
+The library was changed from rt_client to rt since rt_client did not support token authentication.
