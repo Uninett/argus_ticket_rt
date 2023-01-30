@@ -5,12 +5,20 @@ This is a plugin to create tickets in Request Tracker from [Argus](https://githu
 ## Settings
 
 * `TICKET_ENDPOINT`: Link to instance, absolute URL
-* `TICKET_AUTHENTICATION_SECRET`: Standard username/password:
+* `TICKET_AUTHENTICATION_SECRET`: Standard username/password or token:
 
     ```
     {
         "username": username,
         "password": password
+    }
+    ```
+    
+    or
+
+    ```
+    {
+        "token": token
     }
     ```
 
