@@ -83,8 +83,9 @@ class RequestTrackerPlugin(TicketPlugin):
                     token=authentication["token"],
                 )
             except Exception as e:
-                LOG.exception("Request Tracker: Client could not be created.")
-                raise TicketPluginException(f"Request Tracker: {e}")
+                client_error = "Request Tracker: Client could not be created."
+                LOG.exception(client_error)
+                raise TicketClientException(client_error)
             else:
                 return client
 
@@ -96,8 +97,9 @@ class RequestTrackerPlugin(TicketPlugin):
                 ),
             )
         except Exception as e:
-            LOG.exception("Request Tracker: Client could not be created.")
-            raise TicketPluginException(f"Request Tracker: {e}")
+            client_error = "Request Tracker: Client could not be created."
+            LOG.exception(client_error)
+            raise TicketClientException(client_error)
         else:
             return client
 
