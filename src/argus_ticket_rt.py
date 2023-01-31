@@ -18,7 +18,7 @@ from argus.incident.ticket.base import (
 LOG = logging.getLogger(__name__)
 
 
-__version__ = "0.2"
+__version__ = "0.3"
 __all__ = [
     "RequestTrackerPlugin",
 ]
