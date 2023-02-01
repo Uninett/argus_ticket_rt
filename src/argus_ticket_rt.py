@@ -58,7 +58,7 @@ class RequestTrackerPlugin(TicketPlugin):
         incident_tags = RequestTrackerPlugin.convert_tags_to_dict(
             serialized_incident["tags"]
         )
-        custom_fields = ticket_information.get("custom_fields", {})
+        custom_fields = ticket_information.get("custom_fields_set", {})
         custom_fields_mapping = ticket_information.get("custom_fields_mapping", {})
 
         for key, field in custom_fields_mapping.items():
