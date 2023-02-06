@@ -2,6 +2,9 @@
 
 This is a plugin to create tickets in Request Tracker from [Argus](https://github.com/Uninett/argus-server)
 
+The API supported is RT V2. RT 4.4 needs [RT::Extension::REST2](https://github.com/bestpractical/rt-extension-rest2)
+to support V2, while RT 5.0.0 and later has the support included.
+
 ## Settings
 
 * `TICKET_ENDPOINT`: Link to instance, absolute URL
