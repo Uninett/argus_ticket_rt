@@ -16,7 +16,7 @@ to support V2, while RT 5.0.0 and later has the support included.
         "password": password
     }
     ```
-    
+
     or
 
     ```
@@ -25,7 +25,7 @@ to support V2, while RT 5.0.0 and later has the support included.
     }
     ```
 
-* `TICKET_INFORMATION`: 
+* `TICKET_INFORMATION`:
 
     Queue (obligatory)
 
@@ -38,11 +38,11 @@ to support V2, while RT 5.0.0 and later has the support included.
     Custom fields (optional)
 
     There are two ways of automatically filling custom fields:
-    
+
     1. Custom fields that are always the same, independent of the incident. 
     These will be set in `custom_fields_set` with the name of the custom field as key and the fixed value as value.
 
-  
+
         ```
         {
             "custom_fields_set" : {
