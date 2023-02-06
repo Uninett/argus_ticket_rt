@@ -64,6 +64,6 @@ to support V2, while RT 5.0.0 and later has the support included.
 
 ## Library
 
-The library was changed from [rt-client](https://pypi.org/project/rt-client/)
-to [rt](https://pypi.org/project/rt/) since "rt-client" did not support token
-authentication.
+The library used is [rt](https://pypi.org/project/rt/)
+instead of [rt-client](https://pypi.org/project/rt-client/)
+because "rt-client" does not support token authentication.
