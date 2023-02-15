@@ -35,7 +35,7 @@ to support V2, while RT 5.0.0 and later has the support included.
     }
     ```
 
-    Custom fields (optional)
+    ### Custom fields (optional)
 
     There are two ways of automatically filling custom fields:
 
