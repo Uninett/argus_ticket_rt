@@ -25,6 +25,18 @@ to support V2, while RT 5.0.0 and later has the support included.
     }
     ```
 
+    It is recommended to create an RT API user and to ensure that that user has
+    the necessary authorization for creating tickets in the relevant queue.
+
+    Username and password login can be disabled if the login happens through an
+    external provider. In that case an authentication token should be used.
+
+    If authentication tokens are enabled in RT they can be created under
+    "Logged in as ..." -> "Settings" -> "Auth tokens".
+
+    This could however be turned off side-wide or just for that specific user.
+    In that case please contact the responsible RT administrator.
+
 * `TICKET_INFORMATION`:
 
     Queue (obligatory)
