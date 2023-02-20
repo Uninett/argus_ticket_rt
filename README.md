@@ -39,7 +39,7 @@ to support V2, while RT 5.0.0 and later has the support included.
 
     There are two ways of automatically filling custom fields:
 
-    1. Custom fields that are always the same, independent of the incident. 
+    1. Custom fields that are always the same, independent of the incident.
     These will be set in `custom_fields_set` with the name of the custom field as key and the fixed value as value.
 
 
@@ -67,3 +67,19 @@ to support V2, while RT 5.0.0 and later has the support included.
 The library used is [rt](https://pypi.org/project/rt/)
 instead of [rt-client](https://pypi.org/project/rt-client/)
 because "rt-client" does not support token authentication.
+
+## Code style
+
+argus_ticket_rt uses black as a source code formatter. Black can be installed
+by running
+
+```console
+$ pip install black
+```
+
+A pre-commit hook will format new code automatically before committing.
+To enable this pre-commit hook, run
+
+```console
+$ pre-commit install
+```
