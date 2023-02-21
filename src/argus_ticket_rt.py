@@ -18,7 +18,7 @@ from argus.incident.ticket.base import (
 LOG = logging.getLogger(__name__)
 
 
-__version__ = "1.0"
+__version__ = "1.0.1"
 __all__ = [
     "RequestTrackerPlugin",
 ]
@@ -129,6 +129,17 @@ class RequestTrackerPlugin(TicketPlugin):
             permission_error = "Request Tracker: Authenticated client does not have sufficient permissions."
             LOG.exception(permission_error)
             raise TicketCreationException(permission_error)
+        except rt_exceptions.UnexpectedResponseError as e:
+            if e.status_code == 403:
+                permission_error = "Request Tracker: Authenticated client does not have sufficient permissions."
+                LOG.exception(permission_error)
+                raise TicketCreationException(permission_error)
+            unexpected_error = (
+                f"Request Tracker: An unexpected response was encountered: {e.message}."
+            )
+            LOG.exception(unexpected_error)
+            raise TicketCreationException(unexpected_error)
+
         except rt_exceptions.NotFoundError:
             queue_error = f"Request Tracker: No queue with the name {queue} can be found. Please check and update the setting 'TICKET_INFORMATION'."
             LOG.exception(queue_error)
