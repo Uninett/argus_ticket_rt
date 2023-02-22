@@ -6,7 +6,7 @@
 #
 aioredis==2.0.1
     # via argus-server
-argus-server==1.10.0
+argus-server==1.11.1
     # via argus_ticket_rt (pyproject.toml)
 asgiref==3.5.2
     # via
