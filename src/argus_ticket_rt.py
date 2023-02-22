@@ -64,12 +64,16 @@ class RequestTrackerPlugin(TicketPlugin):
         for key, field in custom_fields_mapping.items():
             if type(field) is dict:
                 # Information can be found in tags
-                custom_fields[key] = incident_tags[field["tag"]]
+                custom_field = incident_tags.get(field["tag"], None)
+                if custom_field:
+                    custom_fields[key] = custom_field
             else:
-                # Infinity means that the incident is still open
-                if serialized_incident[field] == "infinity":
-                    continue
-                custom_fields[key] = serialized_incident[field]
+                custom_field = serialized_incident.get(field, None)
+                if custom_field:
+                    # Infinity means that the incident is still open
+                    if custom_field == "infinity":
+                        continue
+                    custom_fields[key] = custom_field
 
         return custom_fields
 
