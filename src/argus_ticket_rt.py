@@ -3,6 +3,7 @@
 import logging
 import requests
 from urllib.parse import urljoin
+from typing import List
 
 import rt.exceptions as rt_exceptions
 from rt.rest2 import Rt
@@ -18,7 +19,7 @@ from argus.incident.ticket.base import (
 LOG = logging.getLogger(__name__)
 
 
-__version__ = "1.0.1"
+__version__ = "1.0.2"
 __all__ = [
     "RequestTrackerPlugin",
 ]
@@ -54,12 +55,15 @@ class RequestTrackerPlugin(TicketPlugin):
         return {key: value for key, value in incident_tags_list}
 
     @staticmethod
-    def get_custom_fields(ticket_information: dict, serialized_incident: dict) -> dict:
+    def get_custom_fields(
+        ticket_information: dict, serialized_incident: dict
+    ) -> tuple[dict, List[str]]:
         incident_tags = RequestTrackerPlugin.convert_tags_to_dict(
             serialized_incident["tags"]
         )
         custom_fields = ticket_information.get("custom_fields_set", {})
         custom_fields_mapping = ticket_information.get("custom_fields_mapping", {})
+        missing_fields = []
 
         for key, field in custom_fields_mapping.items():
             if type(field) is dict:
@@ -67,6 +71,8 @@ class RequestTrackerPlugin(TicketPlugin):
                 custom_field = incident_tags.get(field["tag"], None)
                 if custom_field:
                     custom_fields[key] = custom_field
+                else:
+                    missing_fields.append(field["tag"])
             else:
                 custom_field = serialized_incident.get(field, None)
                 if custom_field:
@@ -74,8 +80,10 @@ class RequestTrackerPlugin(TicketPlugin):
                     if custom_field == "infinity":
                         continue
                     custom_fields[key] = custom_field
+                else:
+                    missing_fields.append(field)
 
-        return custom_fields
+        return custom_fields, missing_fields
 
     @staticmethod
     def create_client(endpoint, authentication):
@@ -149,10 +157,15 @@ class RequestTrackerPlugin(TicketPlugin):
             LOG.exception(queue_error)
             raise TicketSettingsException(queue_error)
 
-        body = cls.create_html_body(serialized_incident=serialized_incident)
-        custom_fields = cls.get_custom_fields(
+        custom_fields, missing_fields = cls.get_custom_fields(
             ticket_information=ticket_information,
             serialized_incident=serialized_incident,
+        )
+        body = cls.create_html_body(
+            serialized_incident={
+                "__missing_fields__": missing_fields,
+                **serialized_incident,
+            }
         )
 
         try:
