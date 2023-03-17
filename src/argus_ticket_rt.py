@@ -58,6 +58,11 @@ class RequestTrackerPlugin(TicketPlugin):
     def get_custom_fields(
         ticket_information: dict, serialized_incident: dict
     ) -> tuple[dict, List[str]]:
+        serialized_incident["start_time"] = serialized_incident["start_time"][:-6]
+        if serialized_incident["end_time"] != "infinity":
+            serialized_incident["end_time"] = serialized_incident["end_time"][:-6]
+        else:
+            del serialized_incident["end_time"]
         incident_tags = RequestTrackerPlugin.convert_tags_to_dict(
             serialized_incident["tags"]
         )
@@ -76,9 +81,6 @@ class RequestTrackerPlugin(TicketPlugin):
             else:
                 custom_field = serialized_incident.get(field, None)
                 if custom_field:
-                    # Infinity means that the incident is still open
-                    if custom_field == "infinity":
-                        continue
                     custom_fields[key] = custom_field
                 else:
                     missing_fields.append(field)
