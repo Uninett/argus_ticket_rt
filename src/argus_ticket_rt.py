@@ -19,7 +19,7 @@ from argus.incident.ticket.base import (
 LOG = logging.getLogger(__name__)
 
 
-__version__ = "1.0.2"
+__version__ = "1.0.3"
 __all__ = [
     "RequestTrackerPlugin",
 ]
@@ -165,7 +165,7 @@ class RequestTrackerPlugin(TicketPlugin):
         )
         body = cls.create_html_body(
             serialized_incident={
-                "__missing_fields__": missing_fields,
+                "missing_fields": missing_fields,
                 **serialized_incident,
             }
         )
