@@ -153,11 +153,13 @@ class RequestTrackerPlugin(TicketPlugin):
             )
             LOG.exception(unexpected_error)
             raise TicketCreationException(unexpected_error)
-
         except rt_exceptions.NotFoundError:
             queue_error = f"Request Tracker: No queue with the name {queue} can be found. Please check and update the setting 'TICKET_INFORMATION'."
             LOG.exception(queue_error)
             raise TicketSettingsException(queue_error)
+        except Exception as e:
+            LOG.exception(e)
+            raise TicketPluginException(e)
 
         custom_fields, missing_fields = cls.get_custom_fields(
             ticket_information=ticket_information,
