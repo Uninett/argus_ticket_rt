@@ -7,6 +7,7 @@ to support V2, while RT 5.0.0 and later has the support included.
 
 ## Settings
 
+* `TICKET_PLUGIN` must be set to `"argus_ticket_rt.RequestTrackerPlugin"`
 * `TICKET_ENDPOINT`: Link to instance, absolute URL
 * `TICKET_AUTHENTICATION_SECRET`: Standard username/password or token:
 
