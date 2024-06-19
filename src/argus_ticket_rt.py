@@ -82,7 +82,7 @@ class RequestTrackerPlugin(TicketPlugin):
                 custom_field = serialized_incident.get(field, None)
                 if custom_field:
                     custom_fields[key] = custom_field
-                else:
+                elif field != "end_time":
                     missing_fields.append(field)
 
         return custom_fields, missing_fields
