@@ -63,15 +63,17 @@ class RequestTrackerPlugin(TicketPlugin):
             serialized_incident["end_time"] = serialized_incident["end_time"][:-6]
         else:
             del serialized_incident["end_time"]
+
         incident_tags = RequestTrackerPlugin.convert_tags_to_dict(
             serialized_incident["tags"]
         )
-        custom_fields = ticket_information.get("custom_fields_set", {})
+        custom_fields = dict()
+        custom_fields.update(ticket_information.get("custom_fields_set", {}))
         custom_fields_mapping = ticket_information.get("custom_fields_mapping", {})
         missing_fields = []
 
         for key, field in custom_fields_mapping.items():
-            if type(field) is dict:
+            if isinstance(field, dict):
                 # Information can be found in tags
                 custom_field = incident_tags.get(field["tag"], None)
                 if custom_field:
@@ -82,7 +84,7 @@ class RequestTrackerPlugin(TicketPlugin):
                 custom_field = serialized_incident.get(field, None)
                 if custom_field:
                     custom_fields[key] = custom_field
-                else:
+                elif field != "end_time":
                     missing_fields.append(field)
 
         return custom_fields, missing_fields
