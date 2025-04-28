@@ -59,7 +59,10 @@ class RequestTrackerPlugin(TicketPlugin):
         ticket_information: dict, serialized_incident: dict
     ) -> tuple[dict, List[str]]:
         serialized_incident["start_time"] = serialized_incident["start_time"][:-6]
-        if serialized_incident["end_time"] != "infinity":
+        if (
+            serialized_incident["end_time"]
+            and serialized_incident["end_time"] != "infinity"
+        ):
             serialized_incident["end_time"] = serialized_incident["end_time"][:-6]
         else:
             del serialized_incident["end_time"]
