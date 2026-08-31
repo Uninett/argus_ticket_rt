@@ -30,6 +30,7 @@ classifiers = [
 dynamic = ["version", "description"]
 
 [project.optional-dependencies]
+dev = ["ruff"]
 test = [
     "tox",
     "coverage",
@@ -38,3 +39,13 @@ test = [
 [project.urls]
 Home = "https://github.com/Uninett/argus_ticket_rt"
 Issues = "https://github.com/Uninett/argus_ticket_rt/issues"
+
+[tool.ruff]
+line-length = 88
+extend-exclude = [
+    ".egg-info",
+]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]
+fixable = ["I"]
