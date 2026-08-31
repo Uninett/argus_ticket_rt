@@ -1,13 +1,11 @@
 "Allow argus-server to create tickets in Request Tracker"
 
 import logging
-import requests
-from urllib.parse import urljoin
 from typing import List
+from urllib.parse import urljoin
 
+import requests
 import rt.exceptions as rt_exceptions
-from rt.rest2 import Rt
-
 from argus.incident.ticket.base import (
     TicketClientException,
     TicketCreationException,
@@ -15,6 +13,7 @@ from argus.incident.ticket.base import (
     TicketPluginException,
     TicketSettingsException,
 )
+from rt.rest2 import Rt
 
 LOG = logging.getLogger(__name__)
 
@@ -101,7 +100,7 @@ class RequestTrackerPlugin(TicketPlugin):
                     url=urljoin(endpoint, "REST/2.0"),
                     token=authentication["token"],
                 )
-            except Exception as e:
+            except Exception:
                 client_error = "Request Tracker: Client could not be created."
                 LOG.exception(client_error)
                 raise TicketClientException(client_error)
@@ -115,7 +114,7 @@ class RequestTrackerPlugin(TicketPlugin):
                     authentication["username"], authentication["password"]
                 ),
             )
-        except Exception as e:
+        except Exception:
             client_error = "Request Tracker: Client could not be created."
             LOG.exception(client_error)
             raise TicketClientException(client_error)
