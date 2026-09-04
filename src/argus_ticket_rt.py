@@ -6,6 +6,7 @@ from urllib.parse import urljoin
 
 import requests
 import rt.exceptions as rt_exceptions
+from argus.incident.models import Incident
 from argus.incident.ticket.base import (
     TicketClientException,
     TicketCreationException,
@@ -201,3 +202,12 @@ class RequestTrackerPlugin(TicketPlugin):
         else:
             ticket_url = urljoin(endpoint, f"Ticket/Display.html?id={ticket_id}")
             return ticket_url
+
+    @staticmethod
+    def get_ticket_identifier(incident: Incident) -> str:
+        try:
+            return incident.ticket_url.rsplit("Ticket/Display.html?id=", maxsplit=1)[
+                1
+            ].strip("/")
+        except Exception:
+            return incident.ticket_url
