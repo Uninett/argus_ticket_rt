@@ -72,6 +72,8 @@ django-rest-knox==5.1.0
     # via argus-server
 django-stubs-ext==6.0.9
     # via django-tasks-db
+django-tasks==0.12.0
+    # via django-tasks-db
 django-tasks-db==0.13.0
     # via argus-server
 django-widget-tweaks==1.5.0
