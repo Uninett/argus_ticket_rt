@@ -19,7 +19,7 @@ from rt.rest2 import Rt
 LOG = logging.getLogger(__name__)
 
 
-__version__ = "1.3.1"
+__version__ = "1.3.2"
 __all__ = [
     "RequestTrackerPlugin",
 ]
