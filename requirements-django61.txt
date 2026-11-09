@@ -10,7 +10,7 @@ anyio==4.14.2
     # via
     #   httpx
     #   httpx2
-argus-server==2.10.1
+argus-server==2.10.2
     # via argus_ticket_rt (pyproject.toml)
 asgiref==3.12.1
     # via
@@ -54,6 +54,7 @@ django==6.1.2
     #   django-psycopg-infinity
     #   django-rest-knox
     #   django-stubs-ext
+    #   django-tasks
     #   django-tasks-db
     #   djangorestframework
     #   drf-spectacular
@@ -71,9 +72,11 @@ django-psycopg-infinity==0.1.0
 django-rest-knox==5.1.0
     # via argus-server
 django-stubs-ext==6.0.9
-    # via django-tasks-db
+    # via
+    #   django-tasks
+    #   django-tasks-db
 django-tasks==0.12.0
-    # via django-tasks-db
+    # via argus-server
 django-tasks-db==0.13.0
     # via argus-server
 django-widget-tweaks==1.5.0
@@ -155,7 +158,6 @@ referencing==0.37.0
 requests==2.34.2
     # via
     #   requests-oauthlib
-    #   rt
     #   social-auth-core
 requests-oauthlib==2.0.0
     # via social-auth-core
@@ -163,7 +165,7 @@ rpds-py==2026.6.3
     # via
     #   jsonschema
     #   referencing
-rt==3.8.0
+rt==4.0.0
     # via argus_ticket_rt (pyproject.toml)
 social-auth-app-django==6.0.1
     # via argus-server
@@ -181,6 +183,7 @@ truststore==0.10.4
 typing-extensions==4.16.0
     # via
     #   django-stubs-ext
+    #   django-tasks
     #   django-tasks-db
     #   pydantic
     #   pydantic-core
@@ -195,3 +198,6 @@ wheel==0.48.0
     # via argus-server
 whitenoise==6.12.0
     # via argus-server
+
+# The following packages are considered to be unsafe in a requirements file:
+# pip

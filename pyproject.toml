@@ -8,8 +8,8 @@ authors = [{name = "Johanna England", email = "johanna.england@sikt.no"}]
 maintainers = [{name = "Johanna England", email = "johanna.england@sikt.no"}]
 readme = "README.md"
 dependencies = [
-    "argus-server>=2.10.1",
-    "rt>=3.3.6",
+    "argus-server>=2.10.2",
+    "rt>=4.0.0",
     "certifi>=2026.10.19",
     "pip>=26.2.2",
 ]
