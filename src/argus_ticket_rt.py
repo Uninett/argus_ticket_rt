@@ -135,8 +135,8 @@ class RequestTrackerPlugin(TicketPlugin):
         # Check if queue exists
         queue = ticket_information["queue"]
         try:
-            client.get_queue(queue_id=queue)
-        except (rt_exceptions.ConnectionError, ConnectionError):
+            client.queues.get(queue_id=queue)
+        except (rt_exceptions.RtConnectionError, ConnectionError):
             connection_error = "Request Tracker: Could not connect to Request Tracker."
             LOG.exception(connection_error)
             raise TicketClientException(connection_error)
@@ -149,10 +149,6 @@ class RequestTrackerPlugin(TicketPlugin):
             LOG.exception(permission_error)
             raise TicketCreationException(permission_error)
         except rt_exceptions.UnexpectedResponseError as e:
-            if e.status_code == 403:
-                permission_error = "Request Tracker: Authenticated client does not have sufficient permissions."
-                LOG.exception(permission_error)
-                raise TicketCreationException(permission_error)
             unexpected_error = (
                 f"Request Tracker: An unexpected response was encountered: {e.message}."
             )
@@ -178,7 +174,7 @@ class RequestTrackerPlugin(TicketPlugin):
         )
 
         try:
-            ticket_id = client.create_ticket(
+            ticket_id = client.tickets.create(
                 queue=ticket_information["queue"],
                 subject=serialized_incident["description"],
                 content_type="text/html",
