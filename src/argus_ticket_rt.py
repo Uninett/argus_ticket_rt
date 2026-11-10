@@ -6,7 +6,7 @@ from urllib.parse import urljoin
 
 import requests
 import rt.exceptions as rt_exceptions
-from argus.incident.models import Incident
+from argus.incident.models import Incident, Tag
 from argus.incident.ticket.base import (
     TicketClientException,
     TicketCreationException,
@@ -50,9 +50,9 @@ class RequestTrackerPlugin(TicketPlugin):
         return endpoint, authentication, ticket_information
 
     @staticmethod
-    def convert_tags_to_dict(tag_dict: dict) -> dict:
-        incident_tags_list = [entry["tag"].split("=") for entry in tag_dict]
-        return {key: value for key, value in incident_tags_list}
+    def convert_tags_to_list_of_tuples(tag_list: list[dict]) -> list[tuple[str, str]]:
+        incident_tags_list = [Tag.split(tag["tag"]) for tag in tag_list]
+        return incident_tags_list
 
     @staticmethod
     def get_custom_fields(
@@ -67,7 +67,7 @@ class RequestTrackerPlugin(TicketPlugin):
         else:
             del serialized_incident["end_time"]
 
-        incident_tags = RequestTrackerPlugin.convert_tags_to_dict(
+        incident_tags = RequestTrackerPlugin.convert_tags_to_list_of_tuples(
             serialized_incident["tags"]
         )
         custom_fields = dict()
@@ -78,9 +78,16 @@ class RequestTrackerPlugin(TicketPlugin):
         for key, field in custom_fields_mapping.items():
             if isinstance(field, dict):
                 # Information can be found in tags
-                custom_field = incident_tags.get(field["tag"], None)
-                if custom_field:
-                    custom_fields[key] = custom_field
+                # There can be multiple tags with the same key, but different values
+                tag_values = []
+                for tag_key, tag_value in incident_tags:
+                    if tag_key == field["tag"]:
+                        tag_values.append(tag_value)
+                if tag_values:
+                    if len(tag_values) == 1:
+                        custom_fields[key] = tag_values[0]
+                    else:
+                        custom_fields[key] = tag_values
                 else:
                     missing_fields.append(field["tag"])
             else:
